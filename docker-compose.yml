@@ -1,0 +1,33 @@
+version: '3'
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:latest
+    container_name: gitlab
+    restart: always
+    volumes:
+      - /data/gitlab/config:/etc/gitlab
+      - /data/gitlab/logs:/var/log/gitlab
+      - /data/gitlab/data:/var/opt/gitlab
+    networks:
+      - w-networks
+    ports:
+      - 443:443
+      - 80:80
+      - 2222:22
+
+  gitlab-runner:
+    image: gitlab/gitlab-runner
+    container_name: gitlab-runner
+    extra_hosts:
+      - "ad4aac43c567:172.17.0.2" # Gitlab-CE
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /data/gitlab-runner/config:/etc/gitlab-runner
+    networks:
+      - w-networks
+    ports:
+      - 8080:8080
+
+networks:
+  w-networks:
+    driver: bridge

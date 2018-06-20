@@ -1,0 +1,37 @@
+image: docker:stable
+
+variables:
+  DOCKER_DRIVER: overlay2
+
+services:
+  - docker:dind
+#before_script:
+#  - docker info
+
+stages:
+  - build
+  - deploy
+
+maven-build:  #   job名称， 可随意命名
+  image: maven:3.5.3-jdk-8 # 使用maven容器运行，可以忽略
+  stage: build  # 绑定这个job为`build`阶段
+#  only:
+#    - master # 仅在master分支变更时才触发执行
+  tags:
+    - docker-privileged # 使用标签名为 `maven`的`runner`执行
+  script: "mvn package -B"  # 执行脚本，此处为打包操作
+  artifacts:
+    paths:
+      - target/*.jar # 本阶段输出文件，此处输出打包后的fatjar
+
+docker-deploy:
+  stage: deploy
+  tags:
+    - docker-privileged # 使用标签名为`maven`的`runner`执行
+  script:  # 这里的脚本逻辑是先把包含这个jar的文件编译成镜像，然后run it
+    - docker build -t demo:1.0 .
+    - app="test"
+    - if docker ps | awk -v app="app" 'NR>1{  ($(NF) == app )  }'; then
+    -  docker stop "$app" && docker rm -f "$app"
+    - fi
+    - docker run --name test -d -p 8081:8080 demo:1.0
