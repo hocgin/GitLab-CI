@@ -50,5 +50,8 @@ sudo docker exec -it gitlab-runner  gitlab-runner register -n \
 - docker-image: 外层使用的 Docker 镜像
 - executor: 执行器
 
+### 编写 `.gitlab-ci.yml`
+[点击 .gitlab-ci.yml 查看](.gitlab-ci.yml)
+
 ### 一键部署
 [点击获取](docker-compose.yml), 记得修改HOST。
